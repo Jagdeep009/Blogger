@@ -1,10 +1,39 @@
-import './App.css'
+import { useState, useEffect } from 'react'
+import {Header, Footer} from "./components/index"
+import './App.css';
+import { useDispatch } from 'react-redux';
+import authService from "./appwrite/auth";
+import {login, logout} from "./store/authoSlice.js"
+import { Outlet } from 'react-router-dom';
 
 function App() {
+  const [loading,setLoading] = useState(true);
+  const dispatch = useDispatch();
 
-  return (
-    <h1>Blog with app write</h1>
-  )
+  useEffect(()=>{
+    authService.getCurrentUser()
+      .then((userdata)=>{
+        if(userdata) {
+          dispatch(login(userdata))
+        }
+        else {
+          dispatch(logout());
+        }
+      })
+      .finally(()=>setLoading(false));
+  },[])
+
+  return !loading ? (
+      <div className='min-h-screen flex flex-wrap content-between bg-gray-500'>
+        <div className='w-full block'>
+          <Header />
+            <main>
+              <Outlet/>
+            </main>
+          <Footer />
+        </div>
+      </div>
+  ) : (null)
 }
 
 export default App
